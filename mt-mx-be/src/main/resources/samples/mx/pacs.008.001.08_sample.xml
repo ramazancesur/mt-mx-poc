@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>REF123456789</MsgId>
+            <CreDtTm>2024-01-01T10:30:00.000000</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <TtlIntrBkSttlmAmt Ccy="USD">1000000.00</TtlIntrBkSttlmAmt>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>REF123456789</InstrId>
+                <EndToEndId>REF123456789</EndToEndId>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="USD">1000000.00</IntrBkSttlmAmt>
+            <Dbtr>
+                <Nm>SENDER BANK NAME</Nm>
+            </Dbtr>
+            <Cdtr>
+                <Nm>RECEIVER NAME</Nm>
+            </Cdtr>
+            <!-- CONVERTED_FROM_MT102 -->
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

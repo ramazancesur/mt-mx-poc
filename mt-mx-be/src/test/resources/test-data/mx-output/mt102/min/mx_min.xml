@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+    <FIToFICstmrCdtTrf>
+        <GrpHdr>
+            <MsgId>REF102MIN</MsgId>
+            <CreDtTm>2024-12-22T10:30:00.000000</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <TtlIntrBkSttlmAmt Ccy="EUR">1000.00</TtlIntrBkSttlmAmt>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>REF102MIN</InstrId>
+                <EndToEndId>REF102MIN</EndToEndId>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="EUR">1000.00</IntrBkSttlmAmt>
+            <Dbtr>
+                <FinInstnId>
+                    <BICFI>BANKBEBBAXXX</BICFI>
+                </FinInstnId>
+            </Dbtr>
+            <CdtrAgt>
+                <FinInstnId>
+                    <BICFI>BANKDEFFXXXX</BICFI>
+                </FinInstnId>
+            </CdtrAgt>
+        </CdtTrfTxInf>
+    </FIToFICstmrCdtTrf>
+</Document>

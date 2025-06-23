@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.009.001.08">
+    <FICdtTrf>
+        <GrpHdr>
+            <MsgId>REF202123456</MsgId>
+            <CreDtTm>2024-01-01T10:30:00.000000</CreDtTm>
+            <NbOfTxs>1</NbOfTxs>
+            <TtlIntrBkSttlmAmt Ccy="USD">500000.00</TtlIntrBkSttlmAmt>
+        </GrpHdr>
+        <CdtTrfTxInf>
+            <PmtId>
+                <InstrId>REF202123456</InstrId>
+                <EndToEndId>REF202123456</EndToEndId>
+            </PmtId>
+            <IntrBkSttlmAmt Ccy="USD">500000.00</IntrBkSttlmAmt>
+            <InstdAgt>
+                <FinInstnId>
+                    <BICFI>BANKDEFFXXXX</BICFI>
+                </FinInstnId>
+            </InstdAgt>
+            <InstgAgt>
+                <FinInstnId>
+                    <BICFI>BANKBEBBAXXX</BICFI>
+                </FinInstnId>
+            </InstgAgt>
+            <!-- CONVERTED_FROM_MT202 -->
+        </CdtTrfTxInf>
+    </FICdtTrf>
+</Document>

@@ -1,0 +1,353 @@
+# ========================================
+# MT-MX Project Comprehensive .gitignore
+# ========================================
+
+# ============================
+# Java & Maven
+# ============================
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# ============================
+# Spring Boot
+# ============================
+*.log
+*.log.*
+logs/
+log/
+spring.log*
+application*.log*
+backend.log
+frontend.log
+
+# Spring Boot DevTools
+.spring-boot-devtools-restart
+
+# ============================
+# Node.js & NPM
+# ============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# ============================
+# IDEs
+# ============================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.project
+.classpath
+.c9/
+*.launch
+.externalToolBuilders/
+.cproject
+.autotools
+.factorypath
+.buildpath
+.target
+.tern-project
+.texlipse
+.springBeans
+.recommenders/
+.apt_generated/
+.apt_generated_test/
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# ============================
+# Operating System
+# ============================
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ============================
+# Docker
+# ============================
+.docker/
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# ============================
+# Database
+# ============================
+*.db
+*.sqlite
+*.sqlite3
+/data/
+/database/
+postgres_data/
+
+# ============================
+# Build & Distribution
+# ============================
+build/
+dist/
+*.tar.gz
+*.zip
+
+# ============================
+# Test Coverage & Reports
+# ============================
+/test-results/
+/playwright-report/
+/coverage/
+jacoco.exec
+jacoco/
+*.exec
+
+# Surefire
+surefire-reports/
+failsafe-reports/
+
+# ============================
+# Temporary Files
+# ============================
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# ============================
+# Security & Secrets
+# ============================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+secrets/
+secret.*
+private.*
+
+# ============================
+# Application Specific
+# ============================
+
+# SWIFT Message files (if any temporary)
+*.swift.tmp
+*.mt.tmp
+*.mx.tmp
+
+# Log files specific to this app
+mt-mx-app.log*
+mt-mx-error.log*
+mt-mx-info.log*
+
+# Backup files
+*.backup
+*.bak
+
+# Generated documentation
+site/
+
+# Archive files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.rar
+*.tar
+*.zip
+
+# ============================
+# Package Managers
+# ============================
+
+# Yarn v2+
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ============================
+# JetBrains specific
+# ============================
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+.idea/**/contentModel.xml
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+.idea/**/dbnavigator.xml
+.idea/**/gradle.xml
+.idea/**/libraries
+.idea/**/mongoSettings.xml
+.idea/**/artifacts
+
+# ============================
+# Gradle (in case it's used)
+# ============================
+.gradle
+**/build/
+!src/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+# ============================
+# Other
+# ============================
+*.pid
+nohup.out 
