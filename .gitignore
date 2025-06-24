@@ -347,7 +347,20 @@ gradle-app.setting
 .gradletasknamecache
 
 # ============================
+# Vite & Frontend Build
+# ============================
+.vite/
+.rollup.cache/
+.swc/
+
+# ============================
+# Test Directories
+# ============================
+mui-test/
+test-playground/
+
+# ============================
 # Other
 # ============================
 *.pid
-nohup.out 
+nohup.out !/mt-mx-fe/node/

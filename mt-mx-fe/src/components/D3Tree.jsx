@@ -128,7 +128,7 @@ const D3Tree = React.memo(({ xmlData = null, onNodeEdit = () => { }, onXmlUpdate
           name: element.nodeName || 'unknown',
           value: textContent || '',
           children: children.length > 0 ? children : null,
-          isExpanded: level < 2,
+          isExpanded: level < 4, // Daha derin seviyeler varsayılan açık
           isEditable: textContent && textContent.length > 0,
           level: level || 0,
           path: nodeId || '',

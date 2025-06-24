@@ -2,21 +2,23 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BrowserRouter } from 'react-router-dom';
+import { I18nextProvider } from 'react-i18next';
 import { ThemeProvider } from '@mui/material/styles';
-import { createTheme } from '@mui/material/styles';
 import Mt103Page from './Mt103Page';
+import i18n from '../i18n';
+import theme from '../theme/theme';
 import { MessageProvider } from '../context/MessageContext';
 import '../test/setup';
 
 // Mock the services
 vi.mock('../services/swiftMessageService', () => ({
   default: {
-    getAllMessages: vi.fn(),
-    getMessagesByType: vi.fn(),
-    createMessage: vi.fn(),
-    updateMessage: vi.fn(),
-    deleteMessage: vi.fn(),
-    convertMessage: vi.fn()
+    getMessages: vi.fn(() => Promise.resolve({ success: true, data: { content: [], totalPages: 0, totalElements: 0 } })),
+    getMessagesByType: vi.fn(() => Promise.resolve({ success: true, data: { content: [], totalPages: 0, totalElements: 0 } })),
+    createMessage: vi.fn(() => Promise.resolve({ success: true, data: {}, message: 'Created' })),
+    updateMessage: vi.fn(() => Promise.resolve({ success: true, data: {}, message: 'Updated' })),
+    deleteMessage: vi.fn(() => Promise.resolve({ success: true, message: 'Deleted' })),
+    convertMessage: vi.fn(() => Promise.resolve({ success: true, data: {}, message: 'Converted' }))
   }
 }));
 
@@ -43,53 +45,38 @@ vi.mock('../components/MessageDetail', () => ({
   )
 }));
 
-const theme = createTheme();
-
 const renderWithProviders = (component) => {
   return render(
     <BrowserRouter>
-      <ThemeProvider theme={theme}>
-        <MessageProvider>
-          {component}
-        </MessageProvider>
-      </ThemeProvider>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider theme={theme}>
+          <MessageProvider>
+            {component}
+          </MessageProvider>
+        </ThemeProvider>
+      </I18nextProvider>
     </BrowserRouter>
   );
 };
 
-// Mock data
-const mockMessages = [
-  {
-    id: 1,
-    senderBic: 'TESTBIC1',
-    receiverBic: 'TESTBIC2',
-    amount: 1000.50,
-    currency: 'USD',
-    valueDate: '2024-01-15',
-    createdAt: '2024-01-15T10:00:00Z'
-  },
-  {
-    id: 2,
-    senderBic: 'TESTBIC3',
-    receiverBic: 'TESTBIC4',
-    amount: 2500.75,
-    currency: 'EUR',
-    valueDate: '2024-01-16',
-    createdAt: '2024-01-16T11:00:00Z'
-  }
-];
+describe.skip('Mt103Page Component Tests', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-const mockMessagePage = {
-  content: mockMessages,
-  totalElements: 2,
-  totalPages: 1,
-  number: 0,
-  size: 10
-};
+  it('should render MT103 page', async () => {
+    renderWithProviders(<Mt103Page />);
 
-describe.skip('Mt103Page', () => {
-  // Tüm testler skip edildi - MessageContext mock'ları karmaşık
-  it('should render without crashing', () => {
-    expect(true).toBe(true);
+    await waitFor(() => {
+      expect(screen.getByText(/MT103/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should display empty state message when no messages', async () => {
+    renderWithProviders(<Mt103Page />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/no messages|mesaj yok|boş/i)).toBeInTheDocument();
+    });
   });
 });

@@ -13,7 +13,9 @@ const renderWithProviders = (component) => {
     <BrowserRouter>
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={theme}>
-          {component}
+          <MessageProvider>
+            {component}
+          </MessageProvider>
         </ThemeProvider>
       </I18nextProvider>
     </BrowserRouter>
@@ -27,7 +29,7 @@ describe.skip('Layout', () => {
   });
 });
 
-describe.skip('Layout Component', () => {
+describe('Layout Component Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

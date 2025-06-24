@@ -1,10 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ThemeProvider } from '@mui/material/styles';
 import Notification from './Notification';
 import theme from '../theme/theme';
+import '../test/setup';
 
-const renderWithTheme = (component) => {
+const renderWithProviders = (component) => {
   return render(
     <ThemeProvider theme={theme}>
       {component}
@@ -12,93 +14,105 @@ const renderWithTheme = (component) => {
   );
 };
 
-describe.skip('Notification Component', () => {
+// ✅ Bildirim bileşeni testleri
+describe('Notification Component Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.clearAllTimers();
+  });
+
   it('should render success notification', () => {
-    const mockOnClose = vi.fn();
-    renderWithTheme(
+    renderWithProviders(
       <Notification 
         open={true} 
-        message="Success message" 
+        message="Başarılı işlem" 
         severity="success" 
-        onClose={mockOnClose} 
+        onClose={vi.fn()} 
       />
     );
     
-    expect(screen.getByText('Success message')).toBeInTheDocument();
+    expect(screen.getByText('Başarılı işlem')).toBeInTheDocument();
   });
 
   it('should render error notification', () => {
-    const mockOnClose = vi.fn();
-    renderWithTheme(
+    renderWithProviders(
       <Notification 
         open={true} 
-        message="Error message" 
+        message="Hata mesajı" 
         severity="error" 
+        onClose={vi.fn()} 
+      />
+    );
+    
+    expect(screen.getByText('Hata mesajı')).toBeInTheDocument();
+  });
+
+  it.skip('should handle close button click', () => {
+    const mockOnClose = vi.fn();
+
+    renderWithProviders(
+      <Notification 
+        open={true} 
+        message="Test mesajı"
+        severity="info" 
         onClose={mockOnClose} 
       />
     );
     
-    expect(screen.getByText('Error message')).toBeInTheDocument();
+    const closeButton = screen.getByRole('button', { name: /close/i });
+    fireEvent.click(closeButton);
+
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it('should not render when open is false', () => {
+    renderWithProviders(
+      <Notification 
+        open={false}
+        message="Gizli mesaj" 
+        severity="info" 
+        onClose={vi.fn()} 
+      />
+    );
+    
+    expect(screen.queryByText('Gizli mesaj')).not.toBeInTheDocument();
   });
 
   it('should render warning notification', () => {
-    const mockOnClose = vi.fn();
-    renderWithTheme(
+    renderWithProviders(
       <Notification 
-        open={true} 
-        message="Warning message" 
-        severity="warning" 
-        onClose={mockOnClose} 
+        open={true}
+        message="Uyarı mesajı"
+        severity="warning"
+        onClose={vi.fn()} 
       />
     );
     
-    expect(screen.getByText('Warning message')).toBeInTheDocument();
+    expect(screen.getByText('Uyarı mesajı')).toBeInTheDocument();
   });
 
-  it('should render info notification', () => {
+  it.skip('should auto-hide after timeout', () => {
+    vi.useFakeTimers();
     const mockOnClose = vi.fn();
-    renderWithTheme(
+
+    renderWithProviders(
       <Notification 
         open={true} 
-        message="Info message" 
-        severity="info" 
-        onClose={mockOnClose} 
+        message="Auto-hide mesajı"
+        severity="info"
+        onClose={mockOnClose}
+        autoHideDuration={3000}
       />
     );
     
-    expect(screen.getByText('Info message')).toBeInTheDocument();
-  });
+    // Advance timers by 3 seconds
+    vi.advanceTimersByTime(3000);
 
-  it('should not render when closed', () => {
-    const mockOnClose = vi.fn();
-    renderWithTheme(
-      <Notification 
-        open={false} 
-        message="Hidden message" 
-        severity="info" 
-        onClose={mockOnClose} 
-      />
-    );
-    
-    expect(screen.queryByText('Hidden message')).not.toBeInTheDocument();
-  });
+    expect(mockOnClose).toHaveBeenCalled();
 
-  it('should have correct positioning', () => {
-    const mockOnClose = vi.fn();
-    renderWithTheme(
-      <Notification 
-        open={true} 
-        message="Positioned message" 
-        severity="success" 
-        onClose={mockOnClose} 
-      />
-    );
-    
-    // Snackbar should be in the DOM
-    expect(screen.getByText('Positioned message')).toBeInTheDocument();
+    vi.useRealTimers();
   });
 });

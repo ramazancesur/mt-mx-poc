@@ -1,151 +1,284 @@
 import axios from 'axios';
 
+// API configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081';
+const API_ENDPOINTS = {
+    MESSAGES: '/api/swift-messages',
+    CONVERT: '/api/convert',
+    VALIDATE: '/api/validate',
+    HEALTH: '/actuator/health'
+};
+
+// Create full URL for endpoints
+const createUrl = (endpoint) => `${API_BASE_URL}${endpoint}`;
+
+// Test için mock response helper
+const createMockResponse = (data, message = 'Success') => ({
+    success: true,
+    message,
+    data
+});
+
+// Network error handler
+const handleNetworkError = (error) => {
+    console.error('API Network Error:', error);
+    
+    // Connection refused durumunda backend'in çalışmadığını belirt
+    if (error.code === 'ECONNREFUSED' || error.message?.includes('ERR_CONNECTION_REFUSED')) {
+        throw new Error('Backend service is not running. Please start the backend.');
+    }
+    
+    // CORS hataları için
+    if (error.message?.includes('CORS')) {
+        throw new Error('CORS error. Please check backend CORS configuration.');
+    }
+    
+    throw error;
+};
 
 class SwiftMessageService {
-  constructor() {
-    this.apiClient = axios.create({
-      baseURL: API_BASE_URL,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }
-
-  // Get all messages with pagination
-  async getAllMessages(page = 0, size = 10) {
+  // Health check - backend'in çalışıp çalışmadığını kontrol et
+  static async checkHealth() {
     try {
-      const response = await this.apiClient.get('/api/swift-messages', {
-        params: { page, size }
+      const response = await fetch(createUrl(API_ENDPOINTS.HEALTH), {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
       });
-      // Backend zaten {success, message, data} formatında döndürüyor
-      return response.data;
+      
+      if (!response.ok) {
+        throw new Error(`Health check failed: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return {
+        success: true,
+        data,
+        message: 'Backend is running healthy'
+      };
     } catch (error) {
-      console.error('Error fetching messages:', error);
-      return { success: false, message: error.message, data: null };
+      console.error('Health check failed:', error);
+      return {
+        success: false,
+        message: 'Backend service is not accessible',
+        error: error.message
+      };
     }
   }
 
-  // Get all messages with pagination (alias for backward compatibility)
-  async getMessages(page = 0, size = 10) {
-    return this.getAllMessages(page, size);
+  // Get all messages with pagination
+  static async getMessages(page = 0, size = 10) {
+    try {
+      const url = createUrl(`${API_ENDPOINTS.MESSAGES}?page=${page}&size=${size}`);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data; // Backend zaten doğru format döndürüyor
+      
+    } catch (error) {
+      handleNetworkError(error);
+    }
   }
 
   // Get messages by type
-  async getMessagesByType(messageType, page = 0, size = 10) {
+  static async getMessagesByType(messageType, page = 0, size = 10) {
     try {
-      const response = await this.apiClient.get(`/api/swift-messages/type/${messageType}`, {
-        params: { page, size }
+      const url = createUrl(`${API_ENDPOINTS.MESSAGES}/type/${messageType}?page=${page}&size=${size}`);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       });
-      return response.data;
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data; // Backend zaten doğru format döndürüyor
+      
     } catch (error) {
-      console.error(`Error fetching ${messageType} messages:`, error);
-      return { success: false, message: error.message, data: null };
+      handleNetworkError(error);
     }
   }
 
   // Get message by ID
-  async getMessageById(id) {
+  static async getMessageById(id) {
     try {
-      const response = await this.apiClient.get(`/api/swift-messages/${id}`);
-      return response.data;
+      const url = createUrl(`${API_ENDPOINTS.MESSAGES}/${id}`);
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error(`Error fetching message ${id}:`, error);
-      throw error;
+      handleNetworkError(error);
     }
   }
 
   // Create new message
-  async createMessage(messageData) {
+  static async createMessage(messageData) {
     try {
-      const response = await this.apiClient.post('/api/swift-messages', messageData);
-      return response.data;
+      const response = await fetch(createUrl(API_ENDPOINTS.MESSAGES), {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+      
     } catch (error) {
-      console.error('Error creating message:', error);
-      return { success: false, message: error.message, data: null };
+      handleNetworkError(error);
     }
   }
 
   // Update message
-  async updateMessage(id, messageData) {
+  static async updateMessage(id, messageData) {
     try {
-      const response = await this.apiClient.put(`/api/swift-messages/${id}`, messageData);
-      return response.data;
+      const response = await fetch(createUrl(`${API_ENDPOINTS.MESSAGES}/${id}`), {
+        method: 'PUT',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+      
     } catch (error) {
-      console.error(`Error updating message ${id}:`, error);
-      return { success: false, message: error.message, data: null };
+      handleNetworkError(error);
     }
   }
 
   // Delete message
-  async deleteMessage(id) {
+  static async deleteMessage(id) {
     try {
-      const response = await this.apiClient.delete(`/api/swift-messages/${id}`);
-      return response.data;
+      const response = await fetch(createUrl(`${API_ENDPOINTS.MESSAGES}/${id}`), {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // DELETE başarılı ise boş response dönebilir
+      const data = await response.json().catch(() => ({ success: true, message: 'Deleted successfully' }));
+      return data;
+      
     } catch (error) {
-      console.error(`Error deleting message ${id}:`, error);
-      return { success: false, message: error.message, data: null };
+      handleNetworkError(error);
     }
   }
 
   // Convert message
-  async convertMessage(id) {
+  static async convertMessage(id) {
     try {
-      const response = await this.apiClient.post(`/api/swift-messages/${id}/convert`, '');
-      return response.data;
-    } catch (error) {
-      console.error(`Error converting message ${id}:`, error);
-      return { success: false, message: error.message, data: null };
-    }
-  }
-
-  // Convert MT to MX message
-  async convertMtToMx(id, rawMtMessage = null) {
-    try {
-      const response = await this.apiClient.post(`/api/swift-messages/${id}/convert`, rawMtMessage || '');
-      return response.data;
-    } catch (error) {
-      console.error(`Error converting MT to MX message ${id}:`, error);
-      return { success: false, message: error.message, data: null };
-    }
-  }
-
-  // Convert MX to MT message
-  async convertMxToMt(id) {
-    try {
-      const response = await this.apiClient.post(`/api/swift-messages/${id}/convert-mx-to-mt`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error converting MX to MT message ${id}:`, error);
-      return { success: false, message: error.message, data: null };
-    }
-  }
-
-  // Update XML content
-  async updateXmlContent(id, xmlContent) {
-    try {
-      const response = await this.apiClient.put(`/api/swift-messages/${id}/update-xml`, xmlContent, {
+      const response = await fetch(createUrl(`${API_ENDPOINTS.MESSAGES}/${id}/convert`), {
+        method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });
-      return response.data;
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+      
     } catch (error) {
-      console.error(`Error updating XML content for message ${id}:`, error);
-      return { success: false, message: error.message, data: null };
+      handleNetworkError(error);
     }
   }
 
-  // Health check
-  async healthCheck() {
+  // Validate message
+  static async validateMessage(messageData) {
     try {
-      const response = await this.apiClient.get('/api/health');
-      return response.data;
+      const response = await fetch(createUrl(API_ENDPOINTS.VALIDATE), {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(messageData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+      
     } catch (error) {
-      console.error('Health check failed:', error);
-      throw error;
+      handleNetworkError(error);
     }
+  }
+
+  // Get API Info
+  static getApiInfo() {
+    return {
+      baseUrl: API_BASE_URL,
+      endpoints: API_ENDPOINTS,
+      fullUrls: {
+        messages: createUrl(API_ENDPOINTS.MESSAGES),
+        convert: createUrl(API_ENDPOINTS.CONVERT),
+        validate: createUrl(API_ENDPOINTS.VALIDATE),
+        health: createUrl(API_ENDPOINTS.HEALTH)
+      }
+    };
   }
 }
 
-export default new SwiftMessageService();
+// Default export as singleton instance
+export default SwiftMessageService;
