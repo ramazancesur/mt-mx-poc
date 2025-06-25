@@ -180,14 +180,14 @@ public class SwiftMessageServiceImpl implements SwiftMessageService {
         }
         
         try {
-            // Convert MX back to MT
-            String convertedMtMessage = conversionService.convertMxToMt(mxMessage);
-            
-            // Update the message with converted content
-            swiftMessage.setRawMtMessage(convertedMtMessage);
-            SwiftMessage savedMessage = swiftMessageRepository.save(swiftMessage);
-            
-            return swiftMessageMapper.toDto(savedMessage);
+        // Convert MX back to MT
+        String convertedMtMessage = conversionService.convertMxToMt(mxMessage);
+        
+        // Update the message with converted content
+        swiftMessage.setRawMtMessage(convertedMtMessage);
+        SwiftMessage savedMessage = swiftMessageRepository.save(swiftMessage);
+        
+        return swiftMessageMapper.toDto(savedMessage);
         } catch (Exception e) {
             log.error("Failed to convert MX to MT: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to convert MX to MT: " + e.getMessage());

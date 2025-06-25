@@ -29,10 +29,16 @@ public class ConversionService {
     // MT to MX converters
     private final Mt103ToMxConverter mt103ToMxConverter;
     private final Mt202ToMxConverter mt202ToMxConverter;
+    private final Mt102ToMxConverter mt102ToMxConverter;
+    private final Mt203ToMxConverter mt203ToMxConverter;
+    private final Mt202CovToMxConverter mt202CovToMxConverter;
 
     // MX to MT converters
     private final MxToMt103Converter mxToMt103Converter;
     private final MxToMt202Converter mxToMt202Converter;
+    private final MxToMt102Converter mxToMt102Converter;
+    private final MxToMt203Converter mxToMt203Converter;
+    private final MxToMt202CovConverter mxToMt202CovConverter;
 
     // Converter registry for easy lookup
     private final Map<String, MessageConverter<String, String>> mtToMxConverters = new HashMap<>();
@@ -43,16 +49,16 @@ public class ConversionService {
      */
     @PostConstruct
     public void initializeConverters() {
-        // MT to MX converters
+        // MT to MX converters - Her mesaj tipi için kendi converter'ını kullan
         mtToMxConverters.put("103", mt103ToMxConverter);
         mtToMxConverters.put("202", mt202ToMxConverter);
-        mtToMxConverters.put("102", mt202ToMxConverter); // MT102 için şimdilik MT202 converter kullan
-        mtToMxConverters.put("203", mt202ToMxConverter); // MT203 için şimdilik MT202 converter kullan
-        mtToMxConverters.put("202COV", mt202ToMxConverter); // MT202COV için şimdilik MT202 converter kullan
+        mtToMxConverters.put("102", mt102ToMxConverter);
+        mtToMxConverters.put("203", mt203ToMxConverter);
+        mtToMxConverters.put("202COV", mt202CovToMxConverter);
 
-        // MX to MT converters
-        mxToMtConverters.put("pacs.008.001.08", mxToMt103Converter);
-        mxToMtConverters.put("pacs.009.001.08", mxToMt202Converter);
+        // MX to MT converters - Sadece temel dönüşümler (çakışma yönetimi için)
+        mxToMtConverters.put("pacs.008.001.08", mxToMt103Converter); // pacs.008 -> MT103 (varsayılan)
+        mxToMtConverters.put("pacs.009.001.08", mxToMt202Converter); // pacs.009 -> MT202
 
         log.info("ConversionService initialized with {} MT to MX converters and {} MX to MT converters",
                 mtToMxConverters.size(), mxToMtConverters.size());
@@ -152,7 +158,7 @@ public class ConversionService {
      * @return List of supported MT message types
      */
     public List<String> getSupportedMtMessageTypes() {
-        return List.of("103", "202");
+        return List.of("102", "103", "202", "202COV", "203");
     }
 
     /**

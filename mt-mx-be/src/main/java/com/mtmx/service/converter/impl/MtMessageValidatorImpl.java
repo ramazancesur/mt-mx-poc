@@ -59,18 +59,26 @@ public class MtMessageValidatorImpl implements MtMessageValidator {
     }
 
     @Override
-    public String extractField(String mtMessage, String fieldName) {
-        if (!StringUtils.hasText(mtMessage) || !StringUtils.hasText(fieldName)) {
+    public String extractField(String mtMessage, String fieldTag) {
+        if (mtMessage == null || fieldTag == null) {
             return null;
         }
 
-        Pattern pattern = Pattern.compile(":" + fieldName + ":([^\\r\\n]+)");
-        Matcher matcher = pattern.matcher(mtMessage);
+        try {
+            Pattern pattern = Pattern.compile(":" + fieldTag + ":([^\\n\\r:]+)", Pattern.MULTILINE);
+            Matcher matcher = pattern.matcher(mtMessage);
 
-        if (matcher.find()) {
-            return matcher.group(1).trim();
+            if (matcher.find()) {
+                String value = matcher.group(1).trim();
+                log.debug("Extracted field {}: {}", fieldTag, value);
+                return value.isEmpty() ? null : value;
+            }
+
+            log.warn("Field {} not found in MT message", fieldTag);
+            return null;
+        } catch (Exception e) {
+            log.error("Error extracting field {}: {}", fieldTag, e.getMessage());
+            return null;
         }
-
-        return null;
     }
 }

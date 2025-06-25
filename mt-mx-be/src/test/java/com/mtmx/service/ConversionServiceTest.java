@@ -29,10 +29,28 @@ class ConversionServiceTest {
     private Mt202ToMxConverter mt202ToMxConverter;
 
     @Mock
+    private Mt102ToMxConverter mt102ToMxConverter;
+
+    @Mock
+    private Mt203ToMxConverter mt203ToMxConverter;
+
+    @Mock
+    private Mt202CovToMxConverter mt202CovToMxConverter;
+
+    @Mock
     private MxToMt103Converter mxToMt103Converter;
 
     @Mock
     private MxToMt202Converter mxToMt202Converter;
+
+    @Mock
+    private MxToMt102Converter mxToMt102Converter;
+
+    @Mock
+    private MxToMt203Converter mxToMt203Converter;
+
+    @Mock
+    private MxToMt202CovConverter mxToMt202CovConverter;
 
     private ConversionService conversionService;
 
@@ -40,8 +58,8 @@ class ConversionServiceTest {
     void setUp() {
         conversionService = new ConversionService(
                 mtMessageValidator, mxMessageValidator,
-                mt103ToMxConverter, mt202ToMxConverter,
-                mxToMt103Converter, mxToMt202Converter);
+                mt103ToMxConverter, mt202ToMxConverter, mt102ToMxConverter, mt203ToMxConverter, mt202CovToMxConverter,
+                mxToMt103Converter, mxToMt202Converter, mxToMt102Converter, mxToMt203Converter, mxToMt202CovConverter);
         conversionService.initializeConverters();
     }
 

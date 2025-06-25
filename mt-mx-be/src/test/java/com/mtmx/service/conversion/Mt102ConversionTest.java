@@ -37,10 +37,28 @@ class Mt102ConversionTest {
     private Mt202ToMxConverter mt202ToMxConverter;
 
     @Mock
+    private Mt102ToMxConverter mt102ToMxConverter;
+
+    @Mock
+    private Mt203ToMxConverter mt203ToMxConverter;
+
+    @Mock
+    private Mt202CovToMxConverter mt202CovToMxConverter;
+
+    @Mock
     private MxToMt103Converter mxToMt103Converter;
 
     @Mock
     private MxToMt202Converter mxToMt202Converter;
+
+    @Mock
+    private MxToMt102Converter mxToMt102Converter;
+
+    @Mock
+    private MxToMt203Converter mxToMt203Converter;
+
+    @Mock
+    private MxToMt202CovConverter mxToMt202CovConverter;
 
     private ConversionService conversionService;
 
@@ -48,19 +66,9 @@ class Mt102ConversionTest {
     void setUp() {
         conversionService = new ConversionService(
                 mtMessageValidator, mxMessageValidator,
-                mt103ToMxConverter, mt202ToMxConverter,
-                mxToMt103Converter, mxToMt202Converter);
+                mt103ToMxConverter, mt202ToMxConverter, mt102ToMxConverter, mt203ToMxConverter, mt202CovToMxConverter,
+                mxToMt103Converter, mxToMt202Converter, mxToMt102Converter, mxToMt203Converter, mxToMt202CovConverter);
         conversionService.initializeConverters();
-        // 102 tipi için mock converter kaydı (reflection ile)
-        try {
-            java.lang.reflect.Field field = ConversionService.class.getDeclaredField("mtToMxConverters");
-            field.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            java.util.Map<String, Object> map = (java.util.Map<String, Object>) field.get(conversionService);
-            map.put("102", mt202ToMxConverter);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Test
@@ -71,8 +79,8 @@ class Mt102ConversionTest {
         // Mock setup
         when(mtMessageValidator.isValid(mtContent)).thenReturn(true);
         when(mtMessageValidator.getMessageType(mtContent)).thenReturn("102");
-        when(mt202ToMxConverter.convert(mtContent)).thenReturn(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.009.001.08\">...</Document>");
+        when(mt102ToMxConverter.convert(mtContent)).thenReturn(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08\">...</Document>");
 
         // MT'den MX'e dönüştür
         String mxResult = conversionService.convertMtToMx(mtContent);
@@ -80,7 +88,7 @@ class Mt102ConversionTest {
         // Assertion
         assertNotNull(mxResult, "MX sonucu null olmamalı");
         assertTrue(mxResult.contains("Document"), "MX formatında Document elementi olmalı");
-        assertTrue(mxResult.contains("pacs.009"), "pacs.009 namespace olmalı");
+        assertTrue(mxResult.contains("pacs.008"), "pacs.008 namespace olmalı");
     }
 
     @Test
@@ -91,8 +99,8 @@ class Mt102ConversionTest {
         // Mock setup
         when(mtMessageValidator.isValid(mtContent)).thenReturn(true);
         when(mtMessageValidator.getMessageType(mtContent)).thenReturn("102");
-        when(mt202ToMxConverter.convert(mtContent)).thenReturn(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.009.001.08\">...</Document>");
+        when(mt102ToMxConverter.convert(mtContent)).thenReturn(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Document xmlns=\"urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08\">...</Document>");
 
         // MT'den MX'e dönüştür
         String mxResult = conversionService.convertMtToMx(mtContent);

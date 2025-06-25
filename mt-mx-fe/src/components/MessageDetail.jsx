@@ -171,70 +171,70 @@ const MessageDetail = ({ open, onClose, message, onUpdate }) => {
                     )}
                     {tabIndex === 1 && (
                         <>
-                            <Paper elevation={2} sx={{ p: 3, flex: '0 0 45%', display: 'flex', flexDirection: 'column' }}>
-                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                                        MX XML İçeriği
-                                    </Typography>
-                                    <Box display="flex" gap={1}>
-                                        <Button
-                                            startIcon={<DownloadIcon />}
-                                            onClick={handleDownload}
-                                            disabled={!mxContent}
-                                            variant="outlined"
-                                            size="small"
-                                        >
-                                            XML İndir
-                                        </Button>
-                                        <Button
-                                            startIcon={<SaveIcon />}
-                                            onClick={handleSaveMx}
-                                            disabled={loading || !hasMxChanges}
-                                            variant="contained"
-                                            color={hasMxChanges ? 'primary' : 'inherit'}
-                                            size="small"
-                                        >
-                                            {loading ? 'Kaydediliyor...' : 'Kaydet'}
-                                        </Button>
-                                    </Box>
-                                </Box>
-                                <TextField
-                                    multiline
-                                    fullWidth
-                                    value={mxContent}
-                                    onChange={(e) => setMxContent(e.target.value)}
-                                    placeholder="MX XML içeriği burada görünecek..."
+                    <Paper elevation={2} sx={{ p: 3, flex: '0 0 45%', display: 'flex', flexDirection: 'column' }}>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                            <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                MX XML İçeriği
+                            </Typography>
+                            <Box display="flex" gap={1}>
+                                <Button
+                                    startIcon={<DownloadIcon />}
+                                    onClick={handleDownload}
+                                    disabled={!mxContent}
                                     variant="outlined"
-                                    sx={{
-                                        flex: 1,
-                                        '& .MuiInputBase-root': {
-                                            height: '100%',
-                                            alignItems: 'flex-start',
-                                            fontFamily: 'Monaco, Consolas, "Courier New", monospace',
-                                            fontSize: '13px',
-                                            lineHeight: 1.5
-                                        },
-                                        '& .MuiInputBase-input': {
-                                            height: '100% !important',
-                                            overflow: 'auto !important',
-                                            resize: 'none'
-                                        }
-                                    }}
-                                />
-                            </Paper>
-                            <Divider />
-                            <Paper elevation={2} sx={{ p: 3, flex: '1 1 50%', display: 'flex', flexDirection: 'column' }}>
-                                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', mb: 2 }}>
-                                    XML Yapısı Görselleştirmesi
-                                </Typography>
-                                <Box sx={{ flex: 1, minHeight: '400px', border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                                    <D3Tree
-                                        key={message?.id || 'empty'}
-                                        xmlData={mxContent}
-                                        onXmlUpdate={setMxContent}
-                                    />
-                                </Box>
-                            </Paper>
+                                    size="small"
+                                >
+                                    XML İndir
+                                </Button>
+                                <Button
+                                    startIcon={<SaveIcon />}
+                                    onClick={handleSaveMx}
+                                    disabled={loading || !hasMxChanges}
+                                    variant="contained"
+                                    color={hasMxChanges ? 'primary' : 'inherit'}
+                                    size="small"
+                                >
+                                    {loading ? 'Kaydediliyor...' : 'Kaydet'}
+                                </Button>
+                            </Box>
+                        </Box>
+                        <TextField
+                            multiline
+                            fullWidth
+                            value={mxContent}
+                            onChange={(e) => setMxContent(e.target.value)}
+                            placeholder="MX XML içeriği burada görünecek..."
+                            variant="outlined"
+                            sx={{
+                                flex: 1,
+                                '& .MuiInputBase-root': {
+                                    height: '100%',
+                                    alignItems: 'flex-start',
+                                    fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+                                    fontSize: '13px',
+                                    lineHeight: 1.5
+                                },
+                                '& .MuiInputBase-input': {
+                                    height: '100% !important',
+                                    overflow: 'auto !important',
+                                    resize: 'none'
+                                }
+                            }}
+                        />
+                    </Paper>
+                    <Divider />
+                    <Paper elevation={2} sx={{ p: 3, flex: '1 1 50%', display: 'flex', flexDirection: 'column' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', mb: 2 }}>
+                            XML Yapısı Görselleştirmesi
+                        </Typography>
+                        <Box sx={{ flex: 1, minHeight: '400px', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                            <D3Tree
+                                key={message?.id || 'empty'}
+                                xmlData={mxContent}
+                                onXmlUpdate={setMxContent}
+                            />
+                        </Box>
+                    </Paper>
                         </>
                     )}
                 </DialogContent>

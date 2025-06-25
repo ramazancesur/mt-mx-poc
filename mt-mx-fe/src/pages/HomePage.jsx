@@ -78,22 +78,33 @@ const HomePage = () => {
     const loadMessages = async () => {
         setLoading(true);
         try {
+            console.log('Loading messages with page:', page, 'rowsPerPage:', rowsPerPage);
             const response = await SwiftMessageService.getMessages(page, rowsPerPage);
-            if (response.success) {
-                setMessages(response.data.content || []);
-                setTotalElements(response.data.totalElements || 0);
+            console.log('Response received:', response);
+
+            if (response && response.success) {
+                const content = response.data?.content || [];
+                const totalElements = response.data?.totalElements || 0;
+                console.log('Setting messages:', content, 'totalElements:', totalElements);
+                setMessages(content);
+                setTotalElements(totalElements);
             } else {
+                console.error('Response not successful:', response);
+                setMessages([]);
+                setTotalElements(0);
                 setNotification({
                     open: true,
-                    message: response.message || 'Failed to load messages',
+                    message: response?.message || 'Failed to load messages',
                     severity: 'error'
                 });
             }
         } catch (error) {
             console.error('Error loading messages:', error);
+            setMessages([]);
+            setTotalElements(0);
             setNotification({
                 open: true,
-                message: 'Failed to load messages',
+                message: 'Backend bağlantısı kurulamadı. Backend servisinin çalıştığından emin olun.',
                 severity: 'error'
             });
         } finally {

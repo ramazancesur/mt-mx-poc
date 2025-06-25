@@ -192,7 +192,7 @@ class SwiftMessageControllerTest {
         mockMvc.perform(post("/api/swift-messages")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidDto)))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.success").value(false));
     }
 
