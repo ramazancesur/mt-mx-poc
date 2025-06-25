@@ -11,13 +11,16 @@ import {
     Alert,
     Snackbar,
     Paper,
-    Divider
+    Divider,
+    Tabs,
+    Tab
 } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import SaveIcon from '@mui/icons-material/Save';
 import SwiftMessageService from '../services/swiftMessageService';
 import D3Tree from './D3Tree';
 import ConfirmationDialog from './ConfirmationDialog';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 const MessageDetail = ({ open, onClose, message, onUpdate }) => {
     const [mxContent, setMxContent] = useState('');
@@ -25,6 +28,7 @@ const MessageDetail = ({ open, onClose, message, onUpdate }) => {
     const [loading, setLoading] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
     const [confirmDialog, setConfirmDialog] = useState({ open: false, title: '', content: '', onConfirm: null });
+    const [tabIndex, setTabIndex] = useState(0);
 
     useEffect(() => {
         if (message && open) {
@@ -33,6 +37,10 @@ const MessageDetail = ({ open, onClose, message, onUpdate }) => {
             setOriginalMxContent(mxData);
         }
     }, [message, open]);
+
+    const handleTabChange = (event, newValue) => {
+        setTabIndex(newValue);
+    };
 
     const handleSaveMx = async () => {
         if (!message || mxContent === originalMxContent) {
@@ -81,6 +89,25 @@ const MessageDetail = ({ open, onClose, message, onUpdate }) => {
         setSnackbar({ open: true, message: 'MX XML dosyası indirildi', severity: 'success' });
     };
 
+    const handleDownloadMt = () => {
+        const filename = `mt_message_${message?.id || 'unknown'}.txt`;
+        const mtContent = message?.rawMtMessage || '';
+        if (!mtContent) {
+            setSnackbar({ open: true, message: 'İndirilecek MT içeriği yok', severity: 'warning' });
+            return;
+        }
+        const blob = new Blob([mtContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setSnackbar({ open: true, message: 'MT mesajı indirildi', severity: 'success' });
+    };
+
     const hasMxChanges = mxContent !== originalMxContent;
 
     return (
@@ -97,87 +124,120 @@ const MessageDetail = ({ open, onClose, message, onUpdate }) => {
                 <DialogTitle>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Typography variant="h5" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                            MX Mesaj Detayı - {message?.messageType}
+                            Mesaj Detayı - {message?.messageType}
                         </Typography>
                         <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
                             ID: {message?.id}
                         </Typography>
                     </Box>
                 </DialogTitle>
-
+                <Tabs value={tabIndex} onChange={handleTabChange} sx={{ px: 3, pt: 1 }}>
+                    <Tab label="MT" />
+                    <Tab label="MX" />
+                </Tabs>
                 <DialogContent sx={{ flex: 1, p: 3, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    {/* MX XML Editor Section */}
-                    <Paper elevation={2} sx={{ p: 3, flex: '0 0 45%', display: 'flex', flexDirection: 'column' }}>
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                                MX XML İçeriği
-                            </Typography>
-                            <Box display="flex" gap={1}>
+                    {tabIndex === 0 && (
+                        <Paper elevation={2} sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center">
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                    MT Mesajı
+                                </Typography>
                                 <Button
-                                    startIcon={<DownloadIcon />}
-                                    onClick={handleDownload}
-                                    disabled={!mxContent}
+                                    startIcon={<FileDownloadIcon />}
+                                    onClick={handleDownloadMt}
+                                    disabled={!message?.rawMtMessage}
                                     variant="outlined"
                                     size="small"
                                 >
-                                    XML İndir
-                                </Button>
-                                <Button
-                                    startIcon={<SaveIcon />}
-                                    onClick={handleSaveMx}
-                                    disabled={loading || !hasMxChanges}
-                                    variant="contained"
-                                    color={hasMxChanges ? 'primary' : 'inherit'}
-                                    size="small"
-                                >
-                                    {loading ? 'Kaydediliyor...' : 'Kaydet'}
+                                    MT Mesajını İndir
                                 </Button>
                             </Box>
-                        </Box>
-
-                        <TextField
-                            multiline
-                            fullWidth
-                            value={mxContent}
-                            onChange={(e) => setMxContent(e.target.value)}
-                            placeholder="MX XML içeriği burada görünecek..."
-                            variant="outlined"
-                            sx={{
-                                flex: 1,
-                                '& .MuiInputBase-root': {
-                                    height: '100%',
-                                    alignItems: 'flex-start',
+                            <TextField
+                                multiline
+                                fullWidth
+                                value={message?.rawMtMessage || ''}
+                                InputProps={{ readOnly: true }}
+                                minRows={12}
+                                maxRows={24}
+                                placeholder="MT mesajı burada görünecek..."
+                                variant="outlined"
+                                sx={{
                                     fontFamily: 'Monaco, Consolas, "Courier New", monospace',
                                     fontSize: '13px',
                                     lineHeight: 1.5
-                                },
-                                '& .MuiInputBase-input': {
-                                    height: '100% !important',
-                                    overflow: 'auto !important',
-                                    resize: 'none'
-                                }
-                            }}
-                        />
-                    </Paper>
-
-                    <Divider />
-
-                    {/* D3 Tree Visualization Section */}
-                    <Paper elevation={2} sx={{ p: 3, flex: '1 1 50%', display: 'flex', flexDirection: 'column' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', mb: 2 }}>
-                            XML Yapısı Görselleştirmesi
-                        </Typography>
-
-                        <Box sx={{ flex: 1, minHeight: '400px', border: '1px solid #e0e0e0', borderRadius: 1 }}>
-                            <D3Tree
-                                key={message?.id || 'empty'}
-                                xmlData={mxContent}
-                                onXmlUpdate={setMxContent}
+                                }}
                             />
-                        </Box>
-                    </Paper>
+                        </Paper>
+                    )}
+                    {tabIndex === 1 && (
+                        <>
+                            <Paper elevation={2} sx={{ p: 3, flex: '0 0 45%', display: 'flex', flexDirection: 'column' }}>
+                                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main' }}>
+                                        MX XML İçeriği
+                                    </Typography>
+                                    <Box display="flex" gap={1}>
+                                        <Button
+                                            startIcon={<DownloadIcon />}
+                                            onClick={handleDownload}
+                                            disabled={!mxContent}
+                                            variant="outlined"
+                                            size="small"
+                                        >
+                                            XML İndir
+                                        </Button>
+                                        <Button
+                                            startIcon={<SaveIcon />}
+                                            onClick={handleSaveMx}
+                                            disabled={loading || !hasMxChanges}
+                                            variant="contained"
+                                            color={hasMxChanges ? 'primary' : 'inherit'}
+                                            size="small"
+                                        >
+                                            {loading ? 'Kaydediliyor...' : 'Kaydet'}
+                                        </Button>
+                                    </Box>
+                                </Box>
+                                <TextField
+                                    multiline
+                                    fullWidth
+                                    value={mxContent}
+                                    onChange={(e) => setMxContent(e.target.value)}
+                                    placeholder="MX XML içeriği burada görünecek..."
+                                    variant="outlined"
+                                    sx={{
+                                        flex: 1,
+                                        '& .MuiInputBase-root': {
+                                            height: '100%',
+                                            alignItems: 'flex-start',
+                                            fontFamily: 'Monaco, Consolas, "Courier New", monospace',
+                                            fontSize: '13px',
+                                            lineHeight: 1.5
+                                        },
+                                        '& .MuiInputBase-input': {
+                                            height: '100% !important',
+                                            overflow: 'auto !important',
+                                            resize: 'none'
+                                        }
+                                    }}
+                                />
+                            </Paper>
+                            <Divider />
+                            <Paper elevation={2} sx={{ p: 3, flex: '1 1 50%', display: 'flex', flexDirection: 'column' }}>
+                                <Typography variant="h6" sx={{ fontWeight: 600, color: 'primary.main', mb: 2 }}>
+                                    XML Yapısı Görselleştirmesi
+                                </Typography>
+                                <Box sx={{ flex: 1, minHeight: '400px', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                                    <D3Tree
+                                        key={message?.id || 'empty'}
+                                        xmlData={mxContent}
+                                        onXmlUpdate={setMxContent}
+                                    />
+                                </Box>
+                            </Paper>
+                        </>
+                    )}
                 </DialogContent>
-
                 <DialogActions sx={{ p: 3, borderTop: '1px solid #e0e0e0' }}>
                     <Button
                         onClick={onClose}

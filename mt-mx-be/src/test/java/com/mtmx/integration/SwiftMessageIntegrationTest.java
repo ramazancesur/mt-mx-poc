@@ -51,13 +51,12 @@ class SwiftMessageIntegrationTest {
     void createAndRetrieveMessage_ShouldWorkEndToEnd() throws Exception {
         // Given
         SwiftMessageDto dto = new SwiftMessageDto();
-        dto.setMessageType(MessageType.MT103);
         dto.setSenderBic("BANKBEBB");
         dto.setReceiverBic("BANKDEFF");
         dto.setAmount(BigDecimal.valueOf(5000.00));
         dto.setCurrency("EUR");
         dto.setValueDate(LocalDate.of(2025, 6, 22));
-        dto.setRawMtMessage("{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF123SINGLE-}");
+        dto.setRawMtMessage("{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF123SINGLE-:32A:250625EUR5000,00-}");
 
         // When - Create message
         String response = mockMvc.perform(post("/api/swift-messages")
@@ -123,7 +122,7 @@ class SwiftMessageIntegrationTest {
         // Given
         SwiftMessage message = createTestMessage(MessageType.MT103, "BANKBEBB", "BANKDEFF");
         SwiftMessage saved = swiftMessageRepository.save(message);
-        String newMtMessage = "{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF456NEW-}";
+        String newMtMessage = "{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF456NEW-:32A:250625EUR5000,00-}";
 
         // When & Then
         mockMvc.perform(post("/api/swift-messages/" + saved.getId() + "/convert")
@@ -150,7 +149,8 @@ class SwiftMessageIntegrationTest {
         updateDto.setAmount(BigDecimal.valueOf(7500.00));
         updateDto.setCurrency("USD");
         updateDto.setValueDate(LocalDate.of(2025, 6, 25));
-        updateDto.setRawMtMessage("{1:F01NEWBANKXXXX0000000000}{2:I103BANKDEFFN}{4::20:REFUPDATE-}");
+        updateDto.setRawMtMessage(
+                "{1:F01NEWBANKXXXX0000000000}{2:I103BANKDEFFN}{4::20:REFUPDATE-:32A:250625USD7500,00-}");
 
         // When & Then
         mockMvc.perform(put("/api/swift-messages/" + saved.getId())
@@ -183,19 +183,24 @@ class SwiftMessageIntegrationTest {
     @Test
     void messageTypeDetection_ShouldWorkForAllTypes() throws Exception {
         // Test MT102
-        testMessageTypeDetection("MT102", "{1:F01BANKBEBB0000000000}{2:I102BANKDEFFN}{4::20:REF102-}");
+        testMessageTypeDetection("MT102",
+                "{1:F01BANKBEBB0000000000}{2:I102BANKDEFFN}{4::20:REF102-:32A:250625EUR1000,00-}");
         
         // Test MT103
-        testMessageTypeDetection("MT103", "{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF103-}");
+        testMessageTypeDetection("MT103",
+                "{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF103-:32A:250625EUR1000,00-}");
         
         // Test MT202
-        testMessageTypeDetection("MT202", "{1:F01BANKBEBB0000000000}{2:I202BANKDEFFN}{4::20:REF202-}");
+        testMessageTypeDetection("MT202",
+                "{1:F01BANKBEBB0000000000}{2:I202BANKDEFFN}{4::20:REF202-:32A:250625EUR1000,00-}");
         
         // Test MT203
-        testMessageTypeDetection("MT203", "{1:F01BANKBEBB0000000000}{2:I203BANKDEFFN}{4::20:REF203-}");
+        testMessageTypeDetection("MT203",
+                "{1:F01BANKBEBB0000000000}{2:I203BANKDEFFN}{4::20:REF203-:32A:250625EUR1000,00-}");
         
         // Test MT202COV
-        testMessageTypeDetection("MT202COV", "{1:F01BANKBEBB0000000000}{2:I202COVBANKDEFFN}{4::20:REF202COV-}");
+        testMessageTypeDetection("MT202COV",
+                "{1:F01BANKBEBB0000000000}{2:I202COVBANKDEFFN}{4::20:REF202COV-:32A:250625EUR1000,00-}");
     }
 
     private void testMessageTypeDetection(String expectedType, String mtMessage) throws Exception {
@@ -223,7 +228,8 @@ class SwiftMessageIntegrationTest {
         message.setAmount(BigDecimal.valueOf(5000.00));
         message.setCurrency("EUR");
         message.setValueDate(LocalDate.of(2025, 6, 22));
-        message.setRawMtMessage("{1:F01" + senderBic + "0000000000}{2:I103" + receiverBic + "N}{4::20:REF123-}");
+        message.setRawMtMessage(
+                "{1:F01" + senderBic + "0000000000}{2:I103" + receiverBic + "N}{4::20:REF123-:32A:250625EUR5000,00-}");
         message.setGeneratedMxMessage("<?xml version=\"1.0\"?><Document>test</Document>");
         return message;
     }

@@ -19,13 +19,13 @@ vi.mock('../services/swiftMessageService', () => ({
 
 const renderWithProviders = (component) => {
   return render(
-    <I18nextProvider i18n={i18n}>
-      <ThemeProvider theme={theme}>
+      <I18nextProvider i18n={i18n}>
+        <ThemeProvider theme={theme}>
         <MessageProvider>
           {component}
         </MessageProvider>
-      </ThemeProvider>
-    </I18nextProvider>
+        </ThemeProvider>
+      </I18nextProvider>
   );
 };
 

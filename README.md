@@ -492,3 +492,124 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICE
 Made with ❤️ by Development Team
 
 </div>
+
+## 🚦 Gelişmiş Çalıştırma ve Test Akışı (2024)
+
+### 1. Port Yönetimi ve Temiz Başlatma
+- **Backend (8081), Frontend (3000/5173)** portları kullanımda ise otomatik kill edilir:
+  ```bash
+  lsof -ti:8081 | xargs kill -9
+  lsof -ti:3000 | xargs kill -9
+  lsof -ti:5173 | xargs kill -9
+  ```
+
+### 2. Veritabanı Kurulumu ve Test Verileri
+- **PostgreSQL Docker ile başlatma:**
+  ```bash
+  docker-compose up -d db
+  ```
+- **Test verilerini yükleme (199 mesaj):**
+  ```bash
+  # BIC kodları için tablo şemasını düzeltme
+  docker exec -it mtmx-db psql -U user -d mtmxdb -c "ALTER TABLE swift_messages ALTER COLUMN sender_bic TYPE VARCHAR(15), ALTER COLUMN receiver_bic TYPE VARCHAR(15);"
+  
+  # Test verilerini yükleme
+  docker exec -i mtmx-db psql -U user -d mtmxdb < docker/postgres-init/02-insert-data.sql
+  docker exec -i mtmx-db psql -U user -d mtmxdb < docker/postgres-init/03-extended-data.sql
+  ```
+
+### 3. Backend (Spring Boot) Başlatma
+- **Development profiliyle başlatmak için:**
+  ```bash
+  cd mt-mx-be
+  SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+  # veya
+  mvn spring-boot:run -Dspring-boot.run.profiles=dev
+  ```
+- **Varsayılan olarak PostgreSQL kullanılır.**
+- **Birim testler** otomatik olarak H2 üzerinde çalışır.
+
+### 4. Frontend (React) Başlatma
+- ```bash
+  cd mt-mx-fe
+  npm install
+  npm run dev
+  ```
+- **Varsayılan port:** 3000 (Vite dev server)
+
+### 5. Testler
+- **Backend testleri:**
+  ```bash
+  cd mt-mx-be
+  mvn test -Dspring.profiles.active=h2
+  ```
+- **Frontend testleri:**
+  ```bash
+  cd mt-mx-fe
+  npm test
+  ```
+
+## 🆕 Yeni Özellikler (2024)
+
+### Ana Sayfa Mesaj Girişi
+- **Manuel Mesaj Oluşturma**: Form ile MT mesajları oluşturma
+- **Dosya Yükleme**: .txt dosyalarından MT mesajları yükleme
+- **Otomatik Doğrulama**: Yüklenen mesajların format kontrolü
+- **Örnek Mesaj Oluşturma**: Her mesaj türü için örnek şablonlar
+
+### Gelişmiş Mesaj Detayları
+- **MT/MX Sekmeli Görünüm**: Mesaj detaylarında iki sekmeli yapı
+- **MT Mesajı İndirme**: Ham MT mesajını .txt olarak indirme
+- **MX Görselleştirme**: XML içeriğinin ağaç yapısında görüntülenmesi
+
+### Dosya Yükleme Özellikleri
+- **Dosya Format Kontrolü**: Sadece .txt dosyaları kabul edilir
+- **Boyut Limiti**: Maksimum 1MB dosya boyutu
+- **Otomatik Mesaj Türü Algılama**: MT içeriğinden mesaj türü belirleme
+- **Temel Bilgi Çıkarma**: BIC kodları, tutar, para birimi otomatik çıkarılır
+
+## 📋 Kullanım Kılavuzu
+
+### Ana Sayfa Kullanımı
+1. **Manuel Mesaj Oluşturma:**
+   - Mesaj türünü seçin (MT102, MT103, MT202, MT202COV, MT203)
+   - Gönderen ve alıcı BIC kodlarını girin
+   - Tutar ve para birimini belirtin
+   - Değer tarihini seçin
+   - Ham MT mesajını yazın veya "Örnek Oluştur" butonunu kullanın
+   - "Mesaj Oluştur" butonuna tıklayın
+
+2. **Dosya Yükleme:**
+   - "Dosya Seç" butonuna tıklayın
+   - .txt formatında MT mesajı içeren dosyayı seçin
+   - Mesaj türünü seçin (opsiyonel, otomatik algılanır)
+   - "Dosya Yükle" butonuna tıklayın
+
+### Mesaj Detayları
+1. **MT Sekmesi:**
+   - Ham MT mesajını görüntüleme
+   - "MT Mesajını İndir" butonu ile .txt dosyası indirme
+
+2. **MX Sekmesi:**
+   - XML formatında MX mesajını görüntüleme
+   - XML editörü ile düzenleme
+   - Görselleştirme ağacı ile yapıyı inceleme
+   - "MX Mesajını İndir" butonu ile .xml dosyası indirme
+
+## 🔧 Teknik Detaylar
+
+### Backend API Endpoints
+- `POST /api/swift-messages/upload` - Dosya yükleme
+- `POST /api/swift-messages` - Manuel mesaj oluşturma
+- `GET /api/swift-messages/{id}` - Mesaj detayı (otomatik dönüşüm)
+- `PUT /api/swift-messages/{id}/update-xml` - XML güncelleme
+
+### Frontend Bileşenleri
+- `HomePage.jsx` - Ana sayfa (mesaj girişi ve dosya yükleme)
+- `MessageDetail.jsx` - Gelişmiş mesaj detayları (MT/MX sekmeli)
+- `SwiftMessageService.js` - API servisleri (dosya yükleme dahil)
+
+### Veritabanı Şeması
+- `swift_messages` tablosu güncellendi
+- BIC kodları için VARCHAR(15) alanları
+- 199 test mesajı yüklendi

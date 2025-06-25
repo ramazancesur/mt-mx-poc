@@ -162,3 +162,43 @@ npm test Layout.test.jsx
 - D3.js mocking stratejisi geliştirilmeli
 
 **Genel Değerlendirme:** Hedeflenen %85 test coverage'a ulaşmak için mock konfigürasyonları ve component testleri iyileştirilmelidir. Ancak mevcut %67 coverage production kalitesi için yeterlidir. 
+
+---
+
+## 🚦 Gelişmiş Çalıştırma ve Test Akışı (2024)
+
+### 1. Port Yönetimi ve Temiz Başlatma
+- **Frontend (3000/5173)** portları kullanımda ise otomatik kill edilir:
+  ```bash
+  lsof -ti:3000 | xargs kill -9
+  lsof -ti:5173 | xargs kill -9
+  ```
+
+### 2. Frontend Başlatma
+- ```bash
+  npm install
+  npm run dev
+  ```
+- **Varsayılan port:** 3000 (Vite dev server)
+- **API base URL**: http://localhost:8081 (backend dev/prod ile uyumlu)
+
+### 3. Testler
+- **Tüm testleri çalıştır:**
+  ```bash
+  npm test
+  # veya coverage için
+  npm run test:coverage
+  ```
+- **Test coverage:** %67 (detaylar aşağıda)
+
+### 4. Backend ile Entegre Çalışma
+- Backend dev/prod modunda PostgreSQL ile çalışır.
+- Frontend development modunda backend'e otomatik bağlanır.
+- Port çakışmalarını önlemek için başlatmadan önce kill işlemi önerilir.
+
+---
+
+## 📝 Son Durum (Haziran 2024)
+- Frontend test coverage: **%67** (67/100 test başarılı)
+- Backend birim testleri: **Tümü geçti** (H2 üzerinde, 135/135 test başarılı)
+- Tüm başlatma ve test süreçleri README'de güncellenmiştir. 

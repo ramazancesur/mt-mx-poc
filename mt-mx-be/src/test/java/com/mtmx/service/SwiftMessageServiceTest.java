@@ -86,7 +86,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void save_WithValidDto_ShouldReturnSavedDto() {
+    void save_WithValidDto_ShouldReturnSavedDto() throws Exception {
         // Given
         when(swiftMessageMapper.toEntity(any(SwiftMessageDto.class))).thenReturn(swiftMessage);
         when(conversionService.convertMtToMx(anyString())).thenReturn("<?xml>converted</xml>");
@@ -107,7 +107,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void save_WithBlankMtMessage_ShouldNotCallConversion() {
+    void save_WithBlankMtMessage_ShouldNotCallConversion() throws Exception {
         // Given
         swiftMessage.setRawMtMessage("");
         swiftMessageDto.setRawMtMessage("");
@@ -125,12 +125,12 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void save_WithNullMessageType_ShouldDetermineMessageType() {
+    void save_WithNullMessageType_ShouldDetermineMessageType() throws Exception {
         // Given
         swiftMessage.setMessageType(null);
         swiftMessage.setRawMtMessage("{1:F01BANKBEBB0000000000}{2:I102BANKDEFFN}{4::20:REF123-}");
         when(swiftMessageMapper.toEntity(any(SwiftMessageDto.class))).thenReturn(swiftMessage);
-        when(conversionService.getMessageType(anyString())).thenReturn("102");
+        when(conversionService.getMtMessageType(anyString())).thenReturn("102");
         when(conversionService.convertMtToMx(anyString())).thenReturn("<?xml>converted</xml>");
         when(xsdValidationService.validateByMtType(anyString(), anyString())).thenReturn(validValidationResult);
         when(swiftMessageRepository.save(any(SwiftMessage.class))).thenReturn(swiftMessage);
@@ -146,11 +146,11 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void convertMtToMx_WithValidId_ShouldReturnConvertedMessage() {
+    void convertMtToMx_WithValidId_ShouldReturnConvertedMessage() throws Exception {
         // Given
         String newMtMessage = "{1:F01BANKBEBB0000000000}{2:I202BANKDEFFN}{4::20:REF456-}";
         when(swiftMessageRepository.findById(1L)).thenReturn(Optional.of(swiftMessage));
-        when(conversionService.getMessageType(anyString())).thenReturn("202");
+        when(conversionService.getMtMessageType(anyString())).thenReturn("202");
         when(conversionService.convertMtToMx(anyString())).thenReturn("<?xml>converted MT202</xml>");
         when(xsdValidationService.validateByMtType(anyString(), anyString())).thenReturn(validValidationResult);
         when(swiftMessageRepository.save(any(SwiftMessage.class))).thenReturn(swiftMessage);
@@ -168,7 +168,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void convertMtToMx_WithInvalidId_ShouldThrowException() {
+    void convertMtToMx_WithInvalidId_ShouldThrowException() throws Exception {
         // Given
         when(swiftMessageRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -178,7 +178,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void findAll_ShouldReturnPageOfDtos() {
+    void findAll_ShouldReturnPageOfDtos() throws Exception {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<SwiftMessage> messagePage = new PageImpl<>(Arrays.asList(swiftMessage));
@@ -195,7 +195,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void findByMessageType_ShouldReturnFilteredMessages() {
+    void findByMessageType_ShouldReturnFilteredMessages() throws Exception {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
         Page<SwiftMessage> messagePage = new PageImpl<>(Arrays.asList(swiftMessage));
@@ -212,7 +212,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void findByMessageType_WithInvalidType_ShouldReturnEmptyPage() {
+    void findByMessageType_WithInvalidType_ShouldReturnEmptyPage() throws Exception {
         // Given
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -225,7 +225,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void findOne_WithValidId_ShouldReturnDto() {
+    void findOne_WithValidId_ShouldReturnDto() throws Exception {
         // Given
         when(swiftMessageRepository.findById(1L)).thenReturn(Optional.of(swiftMessage));
         when(swiftMessageMapper.toDto(any(SwiftMessage.class))).thenReturn(swiftMessageDto);
@@ -239,7 +239,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void findOne_WithInvalidId_ShouldReturnEmpty() {
+    void findOne_WithInvalidId_ShouldReturnEmpty() throws Exception {
         // Given
         when(swiftMessageRepository.findById(999L)).thenReturn(Optional.empty());
 
@@ -251,7 +251,7 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void delete_ShouldCallRepository() {
+    void delete_ShouldCallRepository() throws Exception {
         // When
         swiftMessageService.delete(1L);
 
@@ -260,14 +260,14 @@ class SwiftMessageServiceTest {
     }
 
     @Test
-    void determineMessageType_ShouldIdentifyCorrectTypes() {
+    void determineMessageType_ShouldIdentifyCorrectTypes() throws Exception {
         // Given
         SwiftMessage mt102Message = new SwiftMessage();
         mt102Message.setMessageType(null);
         mt102Message.setRawMtMessage("{1:F01BANKBEBB0000000000}{2:I102BANKDEFFN}{4::20:REF123-}");
         
         when(swiftMessageMapper.toEntity(any(SwiftMessageDto.class))).thenReturn(mt102Message);
-        when(conversionService.getMessageType(anyString())).thenReturn("102");
+        when(conversionService.getMtMessageType(anyString())).thenReturn("102");
         when(conversionService.convertMtToMx(anyString())).thenReturn("<?xml>converted</xml>");
         when(xsdValidationService.validateByMtType(anyString(), anyString())).thenReturn(validValidationResult);
         when(swiftMessageRepository.save(any(SwiftMessage.class))).thenReturn(mt102Message);
@@ -281,11 +281,11 @@ class SwiftMessageServiceTest {
 
         // Then
         assertThat(result).isNotNull();
-        verify(conversionService).getMessageType(anyString());
+        verify(conversionService).getMtMessageType(anyString());
     }
 
     @Test
-    void save_WithConversionError_ShouldSetErrorMessage() {
+    void save_WithConversionError_ShouldSetErrorMessage() throws Exception {
         // Given
         when(swiftMessageMapper.toEntity(any(SwiftMessageDto.class))).thenReturn(swiftMessage);
         when(conversionService.convertMtToMx(anyString())).thenThrow(new RuntimeException("Conversion failed"));

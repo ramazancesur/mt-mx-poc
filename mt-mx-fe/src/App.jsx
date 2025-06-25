@@ -6,6 +6,7 @@ import theme from './theme/theme';
 import i18n from './i18n';
 import { MessageProvider } from './context/MessageContext';
 import Layout from './components/Layout';
+import HomePage from './pages/HomePage';
 import Mt102Page from './pages/Mt102Page';
 import Mt103Page from './pages/Mt103Page';
 import Mt202Page from './pages/Mt202Page';
@@ -20,12 +21,12 @@ function App() {
           <Router>
             <Layout>
               <Routes>
-                <Route path="/" element={<Navigate to="/mt103" replace />} />
+                <Route path="/" element={<HomePage />} />
                 <Route path="/mt102" element={<Mt102Page />} />
                 <Route path="/mt103" element={<Mt103Page />} />
                 <Route path="/mt202" element={<Mt202Page />} />
                 <Route path="/mt203" element={<Mt203Page />} />
-                <Route path="*" element={<Navigate to="/mt103" replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Layout>
           </Router>

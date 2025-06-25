@@ -35,7 +35,7 @@ const renderWithProviders = (component) => {
       <I18nextProvider i18n={i18n}>
         <ThemeProvider theme={theme}>
           <MessageProvider>
-            {component}
+          {component}
           </MessageProvider>
         </ThemeProvider>
       </I18nextProvider>

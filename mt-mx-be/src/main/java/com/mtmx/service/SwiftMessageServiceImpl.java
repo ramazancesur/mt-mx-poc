@@ -179,21 +179,26 @@ public class SwiftMessageServiceImpl implements SwiftMessageService {
             throw new RuntimeException("No MX message content found for id: " + id + ". Please convert MT to MX first.");
         }
         
-        // Convert MX back to MT
-        String convertedMtMessage = conversionService.convertMxToMt(mxMessage);
-        
-        // Update the message with converted content
-        swiftMessage.setRawMtMessage(convertedMtMessage);
-        SwiftMessage savedMessage = swiftMessageRepository.save(swiftMessage);
-        
-        return swiftMessageMapper.toDto(savedMessage);
+        try {
+            // Convert MX back to MT
+            String convertedMtMessage = conversionService.convertMxToMt(mxMessage);
+            
+            // Update the message with converted content
+            swiftMessage.setRawMtMessage(convertedMtMessage);
+            SwiftMessage savedMessage = swiftMessageRepository.save(swiftMessage);
+            
+            return swiftMessageMapper.toDto(savedMessage);
+        } catch (Exception e) {
+            log.error("Failed to convert MX to MT: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to convert MX to MT: " + e.getMessage());
+        }
     }
 
     // Private helper method
     private MessageType determineMessageType(String rawMtMessage) {
         try {
             // Use ConversionService to determine message type
-            String messageType = conversionService.getMessageType(rawMtMessage);
+            String messageType = conversionService.getMtMessageType(rawMtMessage);
             if (messageType == null) {
                 log.warn("Message type is null, defaulting to MT103");
                 return MessageType.MT103;

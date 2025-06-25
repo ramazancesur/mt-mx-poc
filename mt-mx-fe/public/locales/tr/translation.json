@@ -1,5 +1,6 @@
 {
   "app_title": "MT-MX Dönüşüm Aracı",
+  "menu_home": "Ana Sayfa",
   "menu_mt102": "MT102",
   "menu_mt103": "MT103",
   "menu_mt202": "MT202",
@@ -12,6 +13,45 @@
   "page_description_mt103": "MT103 mesajları için tablo burada görüntülenecektir.",
   "page_description_mt202": "MT202 mesajları için tablo burada görüntülenecektir.",
   "page_description_mt203": "MT203 mesajları için tablo burada görüntülenecektir.",
+  
+  "home": {
+    "title": "SWIFT MT-MX Mesaj Dönüştürücü",
+    "description": "Manuel olarak yeni SWIFT mesajları oluşturun veya dosyadan yükleyin. Tüm mesajlar doğrulanacak ve MX formatına dönüştürülecektir.",
+    "manual_creation": "Manuel Mesaj Oluşturma",
+    "file_upload": "Dosya Yükleme",
+    "message_type": "Mesaj Türü",
+    "sender_bic": "Gönderen BIC",
+    "receiver_bic": "Alıcı BIC",
+    "amount": "Tutar",
+    "currency": "Para Birimi",
+    "value_date": "Değer Tarihi",
+    "raw_mt_message": "Ham MT Mesajı",
+    "generate_sample": "Örnek Oluştur",
+    "create_message": "Mesaj Oluştur",
+    "creating": "Oluşturuluyor...",
+    "select_file": "Dosya Seç (.txt)",
+    "upload_file": "Dosya Yükle",
+    "uploading": "Yükleniyor...",
+    "file_format_requirements": "Dosya Format Gereksinimleri",
+    "file_format_info": "• Sadece .txt dosyaları kabul edilir\n• Maksimum dosya boyutu: 1MB\n• Dosya geçerli SWIFT MT mesaj formatı içermelidir\n• Mesaj türü otomatik algılanacak veya manuel belirtilecektir",
+    "validation_errors": {
+      "sender_bic_required": "Gönderen BIC gereklidir",
+      "sender_bic_length": "BIC 11 karakter olmalıdır",
+      "receiver_bic_required": "Alıcı BIC gereklidir",
+      "receiver_bic_length": "BIC 11 karakter olmalıdır",
+      "amount_required": "Geçerli tutar gereklidir",
+      "value_date_required": "Değer tarihi gereklidir",
+      "raw_message_required": "Ham MT mesajı gereklidir"
+    },
+    "messages": {
+      "file_upload_success": "Dosya başarıyla yüklendi!",
+      "file_upload_failed": "Dosya yükleme başarısız oldu",
+      "message_created_success": "Mesaj başarıyla oluşturuldu!",
+      "message_creation_failed": "Mesaj oluşturma başarısız oldu",
+      "fix_validation_errors": "Lütfen doğrulama hatalarını düzeltin",
+      "select_valid_file": "Lütfen önce geçerli bir dosya seçin"
+    }
+  },
   
   "buttons": {
     "edit": "Düzenle",

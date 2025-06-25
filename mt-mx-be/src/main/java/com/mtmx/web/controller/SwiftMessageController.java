@@ -1,6 +1,7 @@
 package com.mtmx.web.controller;
 
 import com.mtmx.domain.entity.SwiftMessage;
+import com.mtmx.domain.enums.MessageType;
 import com.mtmx.service.ConversionService;
 import com.mtmx.service.SwiftMessageService;
 import com.mtmx.web.dto.SwiftMessageDto;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,6 +33,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.math.BigDecimal;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -118,18 +122,14 @@ public class SwiftMessageController {
     @PostMapping("/api/swift-messages")
     public ResponseEntity<StandardResponse<SwiftMessageDto>> createMessage(@RequestBody SwiftMessageDto swiftMessageDto)
             throws URISyntaxException {
-        // Basic validation
-        if (swiftMessageDto == null) {
-            return ResponseEntity.badRequest().body(StandardResponse.error("Geçersiz mesaj verisi"));
+        try {
+            SwiftMessageDto result = swiftMessageService.save(swiftMessageDto);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(StandardResponse.success(result, "Mesaj başarıyla oluşturuldu"));
+        } catch (Exception e) {
+            log.error("Error creating SWIFT message: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(StandardResponse.error("Mesaj oluşturulamadı: " + e.getMessage()));
         }
-
-        SwiftMessageDto result = swiftMessageService.save(swiftMessageDto);
-        if (result == null || result.getId() == null) {
-            return ResponseEntity.badRequest().body(StandardResponse.error("Mesaj kaydedilemedi"));
-        }
-
-        return ResponseEntity.created(new URI("/api/swift-messages/" + result.getId()))
-                .body(StandardResponse.success(result, "Mesaj başarıyla oluşturuldu"));
     }
 
     @Operation(summary = "Update an existing message", responses = {
@@ -208,5 +208,207 @@ public class SwiftMessageController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(StandardResponse.error("Geçersiz XML: " + e.getMessage()));
         }
+    }
+
+    @Operation(summary = "Upload SWIFT message file", responses = {
+            @ApiResponse(responseCode = "201", description = "Dosya başarıyla yüklendi", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SwiftMessageDto.class))),
+            @ApiResponse(responseCode = "400", description = "Geçersiz dosya", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class))),
+            @ApiResponse(responseCode = "500", description = "Sunucu Hatası", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class)))
+    })
+    @PostMapping("/api/swift-messages/upload")
+    public ResponseEntity<StandardResponse<SwiftMessageDto>> uploadMessageFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "messageType", required = false) String messageType) {
+
+        try {
+            log.info("Uploading SWIFT message file: {}, size: {} bytes", file.getOriginalFilename(), file.getSize());
+
+            // File validation
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(StandardResponse.error("Dosya boş olamaz"));
+            }
+
+            if (file.getSize() > 1024 * 1024) { // 1MB limit
+                return ResponseEntity.badRequest().body(StandardResponse.error("Dosya boyutu 1MB'dan büyük olamaz"));
+            }
+
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".txt")) {
+                return ResponseEntity.badRequest().body(StandardResponse.error("Sadece .txt dosyaları kabul edilir"));
+            }
+
+            // Read file content
+            String fileContent = new String(file.getBytes(), "UTF-8");
+            if (fileContent.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(StandardResponse.error("Dosya içeriği boş olamaz"));
+            }
+
+            // Create message DTO
+            SwiftMessageDto messageDto = new SwiftMessageDto();
+            messageDto.setRawMtMessage(fileContent);
+
+            // Auto-detect message type if not provided
+            if (messageType == null || messageType.trim().isEmpty()) {
+                messageType = detectMessageType(fileContent);
+                log.info("Auto-detected message type: {}", messageType);
+            }
+
+            messageDto.setMessageType(MessageType.valueOf(messageType));
+
+            // Extract basic information from MT message
+            extractBasicInfoFromMt(fileContent, messageDto);
+
+            // Save message
+            SwiftMessageDto savedMessage = swiftMessageService.save(messageDto);
+
+            log.info("Successfully uploaded and saved message with ID: {}", savedMessage.getId());
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(StandardResponse.success(savedMessage, "Dosya başarıyla yüklendi ve mesaj oluşturuldu"));
+
+        } catch (Exception e) {
+            log.error("Error uploading SWIFT message file: {}", file.getOriginalFilename(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(StandardResponse.error("Dosya yüklenirken hata oluştu: " + e.getMessage()));
+        }
+    }
+
+    private String detectMessageType(String mtContent) {
+        if (mtContent.contains("{2:I102"))
+            return "MT102";
+        if (mtContent.contains("{2:I103"))
+            return "MT103";
+        if (mtContent.contains("{2:I202"))
+            return "MT202";
+        if (mtContent.contains("{2:I203"))
+            return "MT203";
+        return "MT103"; // Default
+    }
+
+    private void extractBasicInfoFromMt(String mtContent, SwiftMessageDto messageDto) {
+        try {
+            // Extract sender BIC from field 1
+            if (mtContent.contains("{1:F01")) {
+                int start = mtContent.indexOf("{1:F01") + 6;
+                int end = mtContent.indexOf("}", start);
+                if (end > start) {
+                    String senderBic = mtContent.substring(start, end).substring(0, 11);
+                    messageDto.setSenderBic(senderBic);
+                }
+            }
+
+            // Extract receiver BIC from field 2
+            if (mtContent.contains("{2:I")) {
+                int start = mtContent.indexOf("{2:I") + 4;
+                int end = mtContent.indexOf("}", start);
+                if (end > start) {
+                    String receiverBic = mtContent.substring(start, end).substring(0, 11);
+                    messageDto.setReceiverBic(receiverBic);
+                }
+            }
+
+            // Extract amount and currency from field 32A
+            if (mtContent.contains(":32A:")) {
+                int start = mtContent.indexOf(":32A:") + 5;
+                int end = mtContent.indexOf("\n", start);
+                if (end > start) {
+                    String field32A = mtContent.substring(start, end).trim();
+                    // Format: YYMMDDCURRENCYAMOUNT
+                    if (field32A.length() >= 13) {
+                        String currency = field32A.substring(6, 9);
+                        String amountStr = field32A.substring(9).replace(",", ".");
+                        try {
+                            BigDecimal amount = new BigDecimal(amountStr);
+                            messageDto.setCurrency(currency);
+                            messageDto.setAmount(amount);
+                        } catch (NumberFormatException e) {
+                            log.warn("Could not parse amount from field 32A: {}", field32A);
+                        }
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.warn("Error extracting basic info from MT message", e);
+        }
+    }
+
+    @Operation(summary = "Convert MT message to MX format using new JAXB-based converter", responses = {
+            @ApiResponse(responseCode = "200", description = "Başarılı", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Geçersiz mesaj", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class))),
+            @ApiResponse(responseCode = "500", description = "Sunucu Hatası", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class)))
+    })
+    @PostMapping("/api/convert/mt-to-mx")
+    public ResponseEntity<StandardResponse<String>> convertMtToMxNew(@RequestBody String mtMessage) {
+        try {
+            String mxMessage = conversionService.convertMtToMx(mtMessage);
+            return ResponseEntity.ok()
+                    .body(StandardResponse.success(mxMessage, "MT mesajı başarıyla MX formatına dönüştürüldü"));
+        } catch (Exception e) {
+            log.error("Error converting MT to MX: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(StandardResponse.error("Dönüşüm hatası: " + e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Convert MX message to MT format using new JAXB-based converter", responses = {
+            @ApiResponse(responseCode = "200", description = "Başarılı", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Geçersiz mesaj", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class))),
+            @ApiResponse(responseCode = "500", description = "Sunucu Hatası", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class)))
+    })
+    @PostMapping("/api/convert/mx-to-mt")
+    public ResponseEntity<StandardResponse<String>> convertMxToMtNew(@RequestBody String mxMessage) {
+        try {
+            String mtMessage = conversionService.convertMxToMt(mxMessage);
+            return ResponseEntity.ok()
+                    .body(StandardResponse.success(mtMessage, "MX mesajı başarıyla MT formatına dönüştürüldü"));
+        } catch (Exception e) {
+            log.error("Error converting MX to MT: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(StandardResponse.error("Dönüşüm hatası: " + e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Validate MT message", responses = {
+            @ApiResponse(responseCode = "200", description = "Başarılı", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Geçersiz mesaj", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class)))
+    })
+    @PostMapping("/api/validate/mt")
+    public ResponseEntity<StandardResponse<Boolean>> validateMtMessage(@RequestBody String mtMessage) {
+        boolean isValid = conversionService.isValidMtMessage(mtMessage);
+        String messageType = conversionService.getMtMessageType(mtMessage);
+
+        if (isValid) {
+            return ResponseEntity.ok().body(StandardResponse.success(true,
+                    "MT mesajı geçerli. Mesaj tipi: " + messageType));
+        } else {
+            return ResponseEntity.badRequest().body(StandardResponse.error("MT mesajı geçersiz"));
+        }
+    }
+
+    @Operation(summary = "Validate MX message", responses = {
+            @ApiResponse(responseCode = "200", description = "Başarılı", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "400", description = "Geçersiz mesaj", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorDto.class)))
+    })
+    @PostMapping("/api/validate/mx")
+    public ResponseEntity<StandardResponse<Boolean>> validateMxMessage(@RequestBody String mxMessage) {
+        boolean isValid = conversionService.isValidMxMessage(mxMessage);
+        String messageType = conversionService.getMxMessageType(mxMessage);
+
+        if (isValid) {
+            return ResponseEntity.ok().body(StandardResponse.success(true,
+                    "MX mesajı geçerli. Mesaj tipi: " + messageType));
+        } else {
+            return ResponseEntity.badRequest().body(StandardResponse.error("MX mesajı geçersiz"));
+        }
+    }
+
+    @Operation(summary = "Get supported message types", responses = {
+            @ApiResponse(responseCode = "200", description = "Başarılı", content = @Content(mediaType = "application/json"))
+    })
+    @GetMapping("/api/supported-types")
+    public ResponseEntity<StandardResponse<Object>> getSupportedTypes() {
+        return ResponseEntity.ok().body(StandardResponse.success(Map.of(
+                "mtTypes", conversionService.getSupportedMtMessageTypes(),
+                "mxTypes", conversionService.getSupportedMxMessageTypes()),
+                "Desteklenen mesaj tipleri başarıyla getirildi"));
     }
 }

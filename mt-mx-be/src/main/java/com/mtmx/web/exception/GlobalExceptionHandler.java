@@ -21,12 +21,12 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage() != null ? ex.getMessage() : "Beklenmeyen bir hata oluştu";
         ErrorDto errorDetails = new ErrorDto(
                 LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
+                HttpStatus.BAD_REQUEST.value(),
+                        "Bad Request",
                 message,
                 request.getDescription(false).replace("uri=", "")
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -112,11 +112,11 @@ public class GlobalExceptionHandler {
         String message = ex.getMessage() != null ? ex.getMessage() : "Çalışma zamanı hatası";
         ErrorDto errorDetails = new ErrorDto(
                 LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
+                HttpStatus.BAD_REQUEST.value(),
+                        "Bad Request",
                 message,
                 request.getDescription(false).replace("uri=", "")
         );
-        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
     }
 } 

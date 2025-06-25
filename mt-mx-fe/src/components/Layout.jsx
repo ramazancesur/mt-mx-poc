@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import InboxIcon from '@mui/icons-material/MoveToInbox';
 import MailIcon from '@mui/icons-material/Mail';
+import HomeIcon from '@mui/icons-material/Home';
 import Notification from './Notification';
 import { useMessages } from '../context/MessageContext';
 
@@ -16,10 +17,11 @@ const Layout = ({ children }) => {
   const { notification, closeNotification } = useMessages();
 
   const menuItems = [
-    { text: 'menu_mt102', path: '/mt102' },
-    { text: 'menu_mt103', path: '/mt103' },
-    { text: 'menu_mt202', path: '/mt202' },
-    { text: 'menu_mt203', path: '/mt203' }
+    { text: 'menu_home', path: '/', icon: <HomeIcon /> },
+    { text: 'menu_mt102', path: '/mt102', icon: <InboxIcon /> },
+    { text: 'menu_mt103', path: '/mt103', icon: <MailIcon /> },
+    { text: 'menu_mt202', path: '/mt202', icon: <InboxIcon /> },
+    { text: 'menu_mt203', path: '/mt203', icon: <MailIcon /> }
   ];
 
   const changeLanguage = (lng) => {
@@ -66,7 +68,7 @@ const Layout = ({ children }) => {
                   aria-label={item.text}
                 >
                   <ListItemIcon>
-                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                    {item.icon}
                   </ListItemIcon>
                   <ListItemText primary={t(item.text)} />
                 </ListItemButton>

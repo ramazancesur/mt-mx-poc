@@ -6,7 +6,7 @@ const API_ENDPOINTS = {
     MESSAGES: '/api/swift-messages',
     CONVERT: '/api/convert',
     VALIDATE: '/api/validate',
-    HEALTH: '/actuator/health'
+    HEALTH: '/api/health'
 };
 
 // Create full URL for endpoints
@@ -42,10 +42,10 @@ class SwiftMessageService {
     try {
       const response = await fetch(createUrl(API_ENDPOINTS.HEALTH), {
         method: 'GET',
-        headers: {
+      headers: {
           'Accept': 'application/json'
         }
-      });
+    });
       
       if (!response.ok) {
         throw new Error(`Health check failed: ${response.status} ${response.statusText}`);
@@ -198,7 +198,8 @@ class SwiftMessageService {
       const response = await fetch(createUrl(`${API_ENDPOINTS.MESSAGES}/${id}`), {
         method: 'DELETE',
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         }
       });
 
@@ -207,8 +208,28 @@ class SwiftMessageService {
         throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // DELETE başarılı ise boş response dönebilir
-      const data = await response.json().catch(() => ({ success: true, message: 'Deleted successfully' }));
+      const data = await response.json();
+      return data;
+      
+    } catch (error) {
+      handleNetworkError(error);
+    }
+  }
+
+  // Upload message file
+  static async uploadMessageFile(formData) {
+    try {
+      const response = await fetch(createUrl(`${API_ENDPOINTS.MESSAGES}/upload`), {
+        method: 'POST',
+        body: formData // FormData otomatik olarak Content-Type header'ını ayarlar
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
       return data;
       
     } catch (error) {
@@ -224,13 +245,13 @@ class SwiftMessageService {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
-        }
+    }
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
-      }
+    }
 
       const data = await response.json();
       return data;
