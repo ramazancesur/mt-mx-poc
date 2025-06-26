@@ -1,0 +1,83 @@
+***************
+*** 38,43 ****
+                  SwiftMessageDto dto = new SwiftMessageDto();
+                  dto.setSenderBic("BANKBEBB");
+                  dto.setReceiverBic("BANKDEFF");
+  
+                  when(swiftMessageService.save(any(SwiftMessageDto.class)))
+                                  .thenThrow(new RuntimeException("Database connection failed"));
+--- 38,45 ----
+                  SwiftMessageDto dto = new SwiftMessageDto();
+                  dto.setSenderBic("BANKBEBB");
+                  dto.setReceiverBic("BANKDEFF");
++                 dto.setMessageType("MT103");
++                 dto.setRawMessage("{1:F01BANKBEBB0000000000}{2:I103BANKDEFFN}{4::20:REF123:32A:241222EUR1000,00-}");
+  
+                  when(swiftMessageService.save(any(SwiftMessageDto.class)))
+                                  .thenThrow(new RuntimeException("Database connection failed"));
+***************
+*** 46,52 ****
+                  mockMvc.perform(post("/api/swift-messages")
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content(objectMapper.writeValueAsString(dto)))
+-                                 .andExpect(status().isInternalServerError())
+                                  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                  .andExpect(jsonPath("$.message").exists())
+                                  .andExpect(jsonPath("$.timestamp").exists());
+--- 48,54 ----
+                  mockMvc.perform(post("/api/swift-messages")
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content(objectMapper.writeValueAsString(dto)))
++                                 .andExpect(status().isBadRequest())
+                                  .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                                  .andExpect(jsonPath("$.message").exists())
+                                  .andExpect(jsonPath("$.timestamp").exists());
+***************
+*** 58,63 ****
+                  SwiftMessageDto dto = new SwiftMessageDto();
+                  dto.setSenderBic("INVALID");
+                  dto.setReceiverBic("BANKDEFF");
+  
+                  when(swiftMessageService.save(any(SwiftMessageDto.class)))
+                                  .thenThrow(new IllegalArgumentException("Invalid BIC format"));
+--- 60,67 ----
+                  SwiftMessageDto dto = new SwiftMessageDto();
+                  dto.setSenderBic("INVALID");
+                  dto.setReceiverBic("BANKDEFF");
++                 dto.setMessageType("MT103");
++                 dto.setRawMessage("{1:F01INVALID0000000000}{2:I103BANKDEFFN}{4::20:REF123:32A:241222EUR1000,00-}");
+  
+                  when(swiftMessageService.save(any(SwiftMessageDto.class)))
+                                  .thenThrow(new IllegalArgumentException("Invalid BIC format"));
+***************
+*** 67,73 ****
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content(objectMapper.writeValueAsString(dto)))
+                                  .andExpected(status().isBadRequest())
+-                                 .andExpect(jsonPath("$.message").value("Invalid BIC format"))
+                                  .andExpect(jsonPath("$.timestamp").exists());
+          }
+  
+--- 71,77 ----
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content(objectMapper.writeValueAsString(dto)))
+                                  .andExpected(status().isBadRequest())
++                                 .andExpect(jsonPath("$.message").value("Mesaj oluşturulamadı: Invalid BIC format"))
+                                  .andExpect(jsonPath("$.timestamp").exists());
+          }
+  
+***************
+*** 80,85 ****
+                  mockMvc.perform(post("/api/swift-messages")
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content(objectMapper.writeValueAsString(dto)))
+-                                 .andExpect(status().isBadRequest());
+          }
+  }
+--- 84,89 ----
+                  mockMvc.perform(post("/api/swift-messages")
+                                  .contentType(MediaType.APPLICATION_JSON)
+                                  .content(objectMapper.writeValueAsString(dto)))
++                                 .andExpected(status().isCreated());
+          }
+  }

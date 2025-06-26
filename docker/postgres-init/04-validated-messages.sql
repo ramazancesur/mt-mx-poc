@@ -1,7 +1,6 @@
 -- Validated MT-MX Messages Insert Script
 -- Her mesaj türü için doğru SWIFT format'ında mesajlar
 -- Clean existing data first
-TRUNCATE TABLE swift_messages RESTART IDENTITY CASCADE;
 
 -- =============================================================================
 -- MT103 - Single Customer Credit Transfer (15 examples)
